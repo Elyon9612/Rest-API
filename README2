@@ -1,0 +1,55 @@
+//Create the server and store it into the volume:
+docker run -d --name mongo-server			\
+  --network bookaplace					\
+  -p "27017:27017"						\
+  -e "MONGO_INITDB_ROOT_USERNAME=root"			\
+  -e "MONGO_INITDB_ROOT_PASSWORD=Elyon"	\
+  -v assign-2:/app \
+  mongo:latest
+
+
+// For clear the volume:
+  docker container stop mongo-server
+  docker container rm mongo-server
+  docker volume rm assign-2
+
+
+//Run the docker and connect to the mongo server
+docker run --rm -it \
+--network bookaplace \
+mongo:latest \
+mongo --host mongo-server --username root --password Elyon \
+--authenticationDatabase admin
+
+
+//Create a bookaplace network
+use bookaplace
+
+
+// Create the lower-privilege user
+db.createUser({
+    user: "bookaplace",
+    pwd: "hunter",
+    roles: [ {role: "readWrite", db:"bookaplace"} ]
+});
+
+// export basic data of user
+export MONGO_USER="bookaplace"
+export MONGO_DB_NAME="bookaplace"
+export MONGO_PASSWORD="hunter"
+
+
+
+// The source of volume
+"Mounts": [{
+"Type": "volume",
+"Name": "assign-2",
+"Source": "/var/lib/docker/volumes/assign-2/_data",
+"Destination": "/app",
+"Driver": "local",
+"Mode": "z",
+"RW": true,
+"Propagation": ""
+}
+
+
